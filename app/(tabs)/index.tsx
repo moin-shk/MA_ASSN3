@@ -1,74 +1,107 @@
-import { Image, StyleSheet, Platform } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TextInput, StyleSheet } from 'react-native';
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+const FactScreen = () => {
+  const [month, setMonth] = useState('');
+  const [day, setDay] = useState('');
+  const [fact, setFact] = useState('');
 
-export default function HomeScreen() {
+  useEffect(() => {
+    const monthNum = parseInt(month, 10);
+    const dayNum = parseInt(day, 10);
+
+    // Only make the API call if both inputs are valid numbers within range.
+    if (
+      !isNaN(monthNum) &&
+      !isNaN(dayNum) &&
+      monthNum >= 1 && monthNum <= 12 &&
+      dayNum >= 1 && dayNum <= 31
+    ) {
+      fetch(`https://numbers1.p.rapidapi.com/${monthNum}/${dayNum}/date`, {
+        method: 'GET',
+        headers: {
+          'X-RapidAPI-Key': 'YOUR_RAPIDAPI_KEY',
+          'X-RapidAPI-Host': 'numbers1.p.rapidapi.com',
+        },
+      })
+        .then(response => response.text())
+        .then(result => {
+          setFact(result);
+        })
+        .catch(error => {
+          console.error('Error fetching fact:', error);
+          setFact('Error fetching fact. Please try again.');
+        });
+    } else {
+      // Clear the fact if the inputs are incomplete or invalid.
+      setFact('');
+    }
+  }, [month, day]);
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
+    <View style={styles.container}>
+      <Text style={styles.header}>Discover an Interesting Fact!</Text>
+      <View style={styles.form}>
+        <TextInput
+          style={styles.input}
+          placeholder="Month (1-12)"
+          keyboardType="numeric"
+          value={month}
+          onChangeText={text => setMonth(text)}
         />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12'
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+        <TextInput
+          style={styles.input}
+          placeholder="Day (1-31)"
+          keyboardType="numeric"
+          value={day}
+          onChangeText={text => setDay(text)}
+        />
+      </View>
+      {fact !== '' && (
+        <View style={styles.factContainer}>
+          <Text style={styles.factText}>{fact}</Text>
+        </View>
+      )}
+    </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
-  titleContainer: {
+  container: {
+    flex: 1,
+    padding: 20,
+    justifyContent: 'center',
+  },
+  header: {
+    fontSize: 24,
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  form: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+    justifyContent: 'space-between',
+    marginBottom: 20,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  input: {
+    flex: 1,
+    borderColor: '#333',
+    borderWidth: 1,
+    padding: 10,
+    marginHorizontal: 5,
+    borderRadius: 5,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  factContainer: {
+    marginTop: 20,
+    padding: 15,
+    borderWidth: 2,
+    borderColor: '#333',
+    borderRadius: 5,
+    backgroundColor: '#f9f9f9',
+  },
+  factText: {
+    fontSize: 18,
+    textAlign: 'center',
   },
 });
+
+export default FactScreen;
