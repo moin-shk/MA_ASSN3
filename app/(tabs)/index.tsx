@@ -1,22 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, StyleSheet } from 'react-native';
+import { Picker } from '@react-native-picker/picker';
 
 const FactScreen = () => {
-  const [month, setMonth] = useState('');
-  const [day, setDay] = useState('');
-  const [fact, setFact] = useState('');
+  const [selectedMonth, setSelectedMonth] = useState("");
+  const [day, setDay] = useState("");
+  const [fact, setFact] = useState("");
 
   useEffect(() => {
-    const monthNum = parseInt(month, 10);
+    const monthNum = parseInt(selectedMonth, 10);
     const dayNum = parseInt(day, 10);
 
-    // Only make the API call if both inputs are valid numbers within range.
+    // Validate that month and day are within valid ranges
     if (
       !isNaN(monthNum) &&
       !isNaN(dayNum) &&
       monthNum >= 1 && monthNum <= 12 &&
       dayNum >= 1 && dayNum <= 31
     ) {
+      // Make the API call automatically when both inputs are valid.
       fetch(`https://numbers1.p.rapidapi.com/${monthNum}/${dayNum}/date`, {
         method: 'GET',
         headers: {
@@ -33,22 +35,38 @@ const FactScreen = () => {
           setFact('Error fetching fact. Please try again.');
         });
     } else {
-      // Clear the fact if the inputs are incomplete or invalid.
+      // Clear the fact if inputs are incomplete or invalid.
       setFact('');
     }
-  }, [month, day]);
+  }, [selectedMonth, day]);
 
   return (
     <View style={styles.container}>
       <Text style={styles.header}>Discover an Interesting Fact!</Text>
       <View style={styles.form}>
-        <TextInput
-          style={styles.input}
-          placeholder="Month (1-12)"
-          keyboardType="numeric"
-          value={month}
-          onChangeText={text => setMonth(text)}
-        />
+        {/* Month selection dropdown */}
+        <View style={styles.pickerContainer}>
+          <Picker
+            selectedValue={selectedMonth}
+            onValueChange={(itemValue) => setSelectedMonth(itemValue)}
+            style={styles.picker}
+          >
+            <Picker.Item label="Select Month" value="" />
+            <Picker.Item label="January" value="1" />
+            <Picker.Item label="February" value="2" />
+            <Picker.Item label="March" value="3" />
+            <Picker.Item label="April" value="4" />
+            <Picker.Item label="May" value="5" />
+            <Picker.Item label="June" value="6" />
+            <Picker.Item label="July" value="7" />
+            <Picker.Item label="August" value="8" />
+            <Picker.Item label="September" value="9" />
+            <Picker.Item label="October" value="10" />
+            <Picker.Item label="November" value="11" />
+            <Picker.Item label="December" value="12" />
+          </Picker>
+        </View>
+        {/* Day input */}
         <TextInput
           style={styles.input}
           placeholder="Day (1-31)"
@@ -78,16 +96,26 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   form: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
     marginBottom: 20,
+    alignItems: 'center',
+  },
+  pickerContainer: {
+    borderWidth: 1,
+    borderColor: '#333',
+    borderRadius: 5,
+    marginBottom: 10,
+    width: '80%',
+  },
+  picker: {
+    height: 50,
+    width: '100%',
   },
   input: {
-    flex: 1,
+    height: 40,
     borderColor: '#333',
     borderWidth: 1,
-    padding: 10,
-    marginHorizontal: 5,
+    paddingHorizontal: 10,
+    width: '80%',
     borderRadius: 5,
   },
   factContainer: {
